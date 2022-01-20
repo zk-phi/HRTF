@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "build": "esbuild --bundle src/index.js --sourcemap --outfile=dist/main.js",
+    "start": "esbuild --bundle src/index.js --sourcemap --outfile=dist/main.js --servedir=dist"
+  },
+  "devDependencies": {
+    "esbuild": "^0.14.11"
+  }
+}
