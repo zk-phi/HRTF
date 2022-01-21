@@ -86,8 +86,8 @@ class Player extends THREE.Mesh {
   }
 }
 
-let players = [];
-const dragControls = new DragControls(players, camera, renderer.domElement);
+let draggableObjects = [];
+const dragControls = new DragControls(draggableObjects, camera, renderer.domElement);
 dragControls.addEventListener("dragstart", (e) => {
   orbitControls.enabled = false;
   e.object.material.emissive.set(0x333333);
@@ -132,7 +132,7 @@ document.getElementById("file").addEventListener("change", async (e) => {
   const player = new Player(ctx, { buffer: await loadFile(ctx, e.target.files[0]), loop: true });
   e.target.value = null;
   scene.add(player);
-  players.push(player);
+  draggableObjects.push(player);
   player.connect(destination);
   player.start();
 });
