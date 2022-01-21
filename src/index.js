@@ -50,12 +50,22 @@ class Player extends THREE.Mesh {
     this.splitter = new ChannelSplitterNode(ctx, {
       numberOfOutputs: 2,
     });
+    this.gainL = new GainNode(ctx, {
+      gain: 0.5,
+    });
+    this.gainR = new GainNode(ctx, {
+      gain: 0.5,
+    });
     this.panner = new PannerNode(ctx, {
       panningModel: "HRTF",
     });
     this.audioSource.connect(this.splitter);
-    this.splitter.connect(this.panner, 0);
-    this.splitter.connect(this.panner, 1);
+    this.splitter.connect(this.gainL, 0).connect(this.panner);
+    this.splitter.connect(this.gainR, 1).connect(this.panner);
+  }
+  setBalance (value /* 0 ~ 1 */) {
+    this.gainL.gain.value = (1 - value);
+    this.gainR.gain.value = value;
   }
   stop () {
     this.audioSource.stop();
