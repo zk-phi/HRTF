@@ -127,12 +127,16 @@ function initialize () {
   audio.play();
 }
 
-document.getElementById("file").addEventListener("change", async (e) => {
+async function addAudio (file) {
   if (!ctx) initialize();
-  const player = new Player(ctx, { buffer: await loadFile(ctx, e.target.files[0]), loop: true });
-  e.target.value = null;
+  const player = new Player(ctx, { buffer: await loadFile(ctx, file), loop: true });
   scene.add(player);
   draggableObjects.push(player);
   player.connect(destination);
   player.start();
+}
+
+document.getElementById("file").addEventListener("change", (e) => {
+  addAudio(e.target.files[0]);
+  e.target.value = null;
 });
