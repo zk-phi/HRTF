@@ -1,12 +1,49 @@
-const loadFile = (ctx, file) => new Promise((resolve) => {
-  const reader = new FileReader();
-  reader.onload = (e) => ctx.decodeAudioData(e.target.result, resolve);
-  reader.readAsArrayBuffer(file);
-});
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { DragControls } from "three/examples/jsm/controls/DragControls.js";
 
-class Node extends AudioBufferSourceNode {
+const width = 960;
+const height = 640;
+
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  alpha: true,
+});
+renderer.setSize(width, height);
+renderer.setPixelRatio(devicePixelRatio);
+renderer.setClearColor(0x000000, 0);
+document.body.appendChild(renderer.domElement);
+
+const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 1000);
+camera.position.set(0, 30, 0);
+camera.lookAt(0, 0, 0);
+
+const orbitControls = new OrbitControls(camera, renderer.domElement);
+orbitControls.target.set(0, 0, 0);
+
+const scene = new THREE.Scene();
+scene.add(new THREE.PolarGridHelper(50, 32, 50));
+scene.add(new THREE.AxesHelper(100));
+
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(0, 30, 0);
+scene.add(light);
+
+const listener = new THREE.Mesh(
+  new THREE.ConeGeometry(0.5, 1, 32),
+  new THREE.MeshStandardMaterial({ color: "#ff8888" }),
+);
+listener.position.set(0, 0, 0);
+listener.rotation.set(- Math.PI / 2, 0, 0);
+scene.add(listener);
+
+class Player extends THREE.Mesh {
   constructor (ctx, options) {
-    super(ctx, {
+    super(
+      new THREE.SphereGeometry(0.5),
+      new THREE.MeshStandardMaterial({ color: "#88ff88" }),
+    );
+    this.audioSource = new AudioBufferSourceNode(ctx, {
       buffer: options.buffer,
       loop: options.loop,
     });
@@ -16,13 +53,57 @@ class Node extends AudioBufferSourceNode {
     this.panner = new PannerNode(ctx, {
       panningModel: "HRTF",
     });
-    this.connect(this.splitter);
+    this.audioSource.connect(this.splitter);
     this.splitter.connect(this.panner, 0);
     this.splitter.connect(this.panner, 1);
-    this.connect = (node) => this.panner.connect(node);
-    this.disconnect = (node) => this.panner.disconnect(node);
+  }
+  stop () {
+    this.audioSource.stop();
+  }
+  start () {
+    this.audioSource.start();
+  }
+  connect (node) {
+    this.panner.connect(node);
+  }
+  disconnect (node) {
+    this.panner.disconnect(node);
+  }
+  update () {
+    this.panner.positionX.value = this.position.x;
+    this.panner.positionY.value = this.position.y;
+    this.panner.positionZ.value = this.position.z;
   }
 }
+
+let players = [];
+const dragControls = new DragControls(players, camera, renderer.domElement);
+dragControls.addEventListener("dragstart", (e) => {
+  orbitControls.enabled = false;
+  e.object.material.emissive.set(0x333333);
+});
+dragControls.addEventListener("dragend", (e) => {
+  orbitControls.enabled = true;
+  e.object.material.emissive.set(0x000000);
+});
+dragControls.addEventListener("drag", (e) => {
+  e.object.update && e.object.update();
+});
+
+function update () {
+  requestAnimationFrame(update);
+  orbitControls.update();
+  renderer.render(scene, camera);
+};
+update();
+
+/* ----------------------------------------- */
+
+const loadFile = (ctx, file) => new Promise((resolve) => {
+  const reader = new FileReader();
+  reader.onload = (e) => ctx.decodeAudioData(e.target.result, resolve);
+  reader.readAsArrayBuffer(file);
+});
 
 let ctx;
 let destination;
@@ -30,31 +111,18 @@ let destination;
 function initialize () {
   ctx = new AudioContext();
   destination = new MediaStreamAudioDestinationNode(ctx);
-  const audio = document.getElementById("audio");
+  const audio = document.createElement("audio");
+  document.body.appendChild(audio);
   audio.srcObject = destination.stream;
   audio.play();
 }
 
-let src;
-
 document.getElementById("file").addEventListener("change", async (e) => {
   if (!ctx) initialize();
-  src = new Node(ctx, { buffer: await loadFile(ctx, e.target.files[0]), loop: true });
-  src.connect(destination);
-  src.start();
-});
-
-document.getElementById("x").addEventListener("input", (e) => {
-  src.panner.positionX.value = parseFloat(e.target.value);
-  console.log(src.panner.positionX.value);
-});
-
-document.getElementById("y").addEventListener("input", (e) => {
-  src.panner.positionY.value = parseFloat(e.target.value);
-  console.log(src.panner.positionY.value);
-});
-
-document.getElementById("z").addEventListener("input", (e) => {
-  src.panner.positionZ.value = parseFloat(e.target.value);
-  console.log(src.panner.positionZ.value);
+  const player = new Player(ctx, { buffer: await loadFile(ctx, e.target.files[0]), loop: true });
+  e.target.value = null;
+  scene.add(player);
+  players.push(player);
+  player.connect(destination);
+  player.start();
 });
