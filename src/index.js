@@ -79,7 +79,7 @@ class Player extends THREE.Mesh {
   disconnect (node) {
     this.panner.disconnect(node);
   }
-  update () {
+  updateAudio () {
     this.panner.positionX.value = this.position.x;
     this.panner.positionY.value = this.position.y;
     this.panner.positionZ.value = this.position.z;
@@ -97,7 +97,7 @@ dragControls.addEventListener("dragend", (e) => {
   e.object.material.emissive.set(0x000000);
 });
 dragControls.addEventListener("drag", (e) => {
-  e.object.update && e.object.update();
+  e.object.updateAudio && e.object.updateAudio();
 });
 
 function update () {
