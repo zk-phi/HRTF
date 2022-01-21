@@ -25353,12 +25353,22 @@
       this.splitter = new ChannelSplitterNode(ctx2, {
         numberOfOutputs: 2
       });
+      this.gainL = new GainNode(ctx2, {
+        gain: 0.5
+      });
+      this.gainR = new GainNode(ctx2, {
+        gain: 0.5
+      });
       this.panner = new PannerNode(ctx2, {
         panningModel: "HRTF"
       });
       this.audioSource.connect(this.splitter);
-      this.splitter.connect(this.panner, 0);
-      this.splitter.connect(this.panner, 1);
+      this.splitter.connect(this.gainL, 0).connect(this.panner);
+      this.splitter.connect(this.gainR, 1).connect(this.panner);
+    }
+    setBalance(value) {
+      this.gainL.gain.value = 1 - value;
+      this.gainR.gain.value = value;
     }
     stop() {
       this.audioSource.stop();
@@ -25372,14 +25382,14 @@
     disconnect(node) {
       this.panner.disconnect(node);
     }
-    update() {
+    updateAudio() {
       this.panner.positionX.value = this.position.x;
       this.panner.positionY.value = this.position.y;
       this.panner.positionZ.value = this.position.z;
     }
   };
-  var players = [];
-  var dragControls = new DragControls(players, camera, renderer.domElement);
+  var draggableObjects = [];
+  var dragControls = new DragControls(draggableObjects, camera, renderer.domElement);
   dragControls.addEventListener("dragstart", (e) => {
     orbitControls.enabled = false;
     e.object.material.emissive.set(3355443);
@@ -25389,7 +25399,7 @@
     e.object.material.emissive.set(0);
   });
   dragControls.addEventListener("drag", (e) => {
-    e.object.update && e.object.update();
+    e.object.updateAudio && e.object.updateAudio();
   });
   function update() {
     requestAnimationFrame(update);
@@ -25412,15 +25422,18 @@
     audio.srcObject = destination.stream;
     audio.play();
   }
-  document.getElementById("file").addEventListener("change", async (e) => {
+  async function addAudio(file) {
     if (!ctx)
       initialize();
-    const player = new Player(ctx, { buffer: await loadFile(ctx, e.target.files[0]), loop: true });
-    e.target.value = null;
+    const player = new Player(ctx, { buffer: await loadFile(ctx, file), loop: true });
     scene.add(player);
-    players.push(player);
+    draggableObjects.push(player);
     player.connect(destination);
     player.start();
+  }
+  document.getElementById("file").addEventListener("change", (e) => {
+    addAudio(e.target.files[0]);
+    e.target.value = null;
   });
 })();
 /**
