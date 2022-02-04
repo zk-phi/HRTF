@@ -43,10 +43,7 @@ class Player extends THREE.Mesh {
       new THREE.SphereGeometry(0.5),
       new THREE.MeshStandardMaterial({ color: "#88ff88" }),
     );
-    this.audioSource = new AudioBufferSourceNode(ctx, {
-      buffer: options.buffer,
-      loop: options.loop,
-    });
+    this.buffer = options.buffer;
     this.splitter = new ChannelSplitterNode(ctx, {
       numberOfOutputs: 2,
     });
@@ -59,7 +56,6 @@ class Player extends THREE.Mesh {
     this.panner = new PannerNode(ctx, {
       panningModel: "HRTF",
     });
-    this.audioSource.connect(this.splitter);
     this.splitter.connect(this.gainL, 0).connect(this.panner);
     this.splitter.connect(this.gainR, 1).connect(this.panner);
   }
@@ -67,11 +63,10 @@ class Player extends THREE.Mesh {
     this.gainL.gain.value = (1 - value);
     this.gainR.gain.value = value;
   }
-  stop () {
-    this.audioSource.stop();
-  }
   start () {
-    this.audioSource.start();
+    const audioSource = new AudioBufferSourceNode(ctx, { buffer: this.buffer });
+    audioSource.connect(this.splitter);
+    audioSource.start();
   }
   connect (node) {
     this.panner.connect(node);
@@ -117,6 +112,7 @@ const loadFile = (ctx, file) => new Promise((resolve) => {
 
 let ctx;
 let destination;
+let players = [];
 
 function initialize () {
   ctx = new AudioContext();
@@ -129,14 +125,22 @@ function initialize () {
 
 async function addAudio (file) {
   if (!ctx) initialize();
-  const player = new Player(ctx, { buffer: await loadFile(ctx, file), loop: true });
+  const player = new Player(ctx, { buffer: await loadFile(ctx, file), loop: false });
   scene.add(player);
   draggableObjects.push(player);
   player.connect(destination);
-  player.start();
+  players.push(player);
+}
+
+function start () {
+  players.forEach((p) => p.start());
 }
 
 document.getElementById("file").addEventListener("change", (e) => {
   addAudio(e.target.files[0]);
   e.target.value = null;
+});
+
+document.getElementById("play").addEventListener("click", (e) => {
+  start();
 });
