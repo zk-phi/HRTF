@@ -5608,9 +5608,9 @@
     hasAttribute(name) {
       return this.attributes[name] !== void 0;
     }
-    addGroup(start, count, materialIndex = 0) {
+    addGroup(start2, count, materialIndex = 0) {
       this.groups.push({
-        start,
+        start: start2,
         count,
         materialIndex
       });
@@ -5618,8 +5618,8 @@
     clearGroups() {
       this.groups = [];
     }
-    setDrawRange(start, count) {
-      this.drawRange.start = start;
+    setDrawRange(start2, count) {
+      this.drawRange.start = start2;
       this.drawRange.count = count;
     }
     applyMatrix4(matrix) {
@@ -5842,9 +5842,9 @@
       }
       for (let i = 0, il = groups.length; i < il; ++i) {
         const group = groups[i];
-        const start = group.start;
+        const start2 = group.start;
         const count = group.count;
-        for (let j = start, jl = start + count; j < jl; j += 3) {
+        for (let j = start2, jl = start2 + count; j < jl; j += 3) {
           handleTriangle(indices[j + 0], indices[j + 1], indices[j + 2]);
         }
       }
@@ -5866,9 +5866,9 @@
       }
       for (let i = 0, il = groups.length; i < il; ++i) {
         const group = groups[i];
-        const start = group.start;
+        const start2 = group.start;
         const count = group.count;
-        for (let j = start, jl = start + count; j < jl; j += 3) {
+        for (let j = start2, jl = start2 + count; j < jl; j += 3) {
           handleVertex(indices[j + 0]);
           handleVertex(indices[j + 1]);
           handleVertex(indices[j + 2]);
@@ -6228,9 +6228,9 @@
             for (let i = 0, il = groups.length; i < il; i++) {
               const group = groups[i];
               const groupMaterial = material[group.materialIndex];
-              const start = Math.max(group.start, drawRange.start);
+              const start2 = Math.max(group.start, drawRange.start);
               const end = Math.min(index.count, Math.min(group.start + group.count, drawRange.start + drawRange.count));
-              for (let j = start, jl = end; j < jl; j += 3) {
+              for (let j = start2, jl = end; j < jl; j += 3) {
                 const a = index.getX(j);
                 const b = index.getX(j + 1);
                 const c = index.getX(j + 2);
@@ -6243,9 +6243,9 @@
               }
             }
           } else {
-            const start = Math.max(0, drawRange.start);
+            const start2 = Math.max(0, drawRange.start);
             const end = Math.min(index.count, drawRange.start + drawRange.count);
-            for (let i = start, il = end; i < il; i += 3) {
+            for (let i = start2, il = end; i < il; i += 3) {
               const a = index.getX(i);
               const b = index.getX(i + 1);
               const c = index.getX(i + 2);
@@ -6261,9 +6261,9 @@
             for (let i = 0, il = groups.length; i < il; i++) {
               const group = groups[i];
               const groupMaterial = material[group.materialIndex];
-              const start = Math.max(group.start, drawRange.start);
+              const start2 = Math.max(group.start, drawRange.start);
               const end = Math.min(position.count, Math.min(group.start + group.count, drawRange.start + drawRange.count));
-              for (let j = start, jl = end; j < jl; j += 3) {
+              for (let j = start2, jl = end; j < jl; j += 3) {
                 const a = j;
                 const b = j + 1;
                 const c = j + 2;
@@ -6276,9 +6276,9 @@
               }
             }
           } else {
-            const start = Math.max(0, drawRange.start);
+            const start2 = Math.max(0, drawRange.start);
             const end = Math.min(position.count, drawRange.start + drawRange.count);
-            for (let i = start, il = end; i < il; i += 3) {
+            for (let i = start2, il = end; i < il; i += 3) {
               const a = i;
               const b = i + 1;
               const c = i + 2;
@@ -8401,11 +8401,11 @@
     function setMode(value) {
       mode = value;
     }
-    function render(start, count) {
-      gl.drawArrays(mode, start, count);
+    function render(start2, count) {
+      gl.drawArrays(mode, start2, count);
       info.update(count, mode, 1);
     }
-    function renderInstances(start, count, primcount) {
+    function renderInstances(start2, count, primcount) {
       if (primcount === 0)
         return;
       let extension, methodName;
@@ -8420,7 +8420,7 @@
           return;
         }
       }
-      extension[methodName](mode, start, count, primcount);
+      extension[methodName](mode, start2, count, primcount);
       info.update(count, mode, primcount);
     }
     this.setMode = setMode;
@@ -9537,11 +9537,11 @@
       type = value.type;
       bytesPerElement = value.bytesPerElement;
     }
-    function render(start, count) {
-      gl.drawElements(mode, count, type, start * bytesPerElement);
+    function render(start2, count) {
+      gl.drawElements(mode, count, type, start2 * bytesPerElement);
       info.update(count, mode, 1);
     }
-    function renderInstances(start, count, primcount) {
+    function renderInstances(start2, count, primcount) {
       if (primcount === 0)
         return;
       let extension, methodName;
@@ -9556,7 +9556,7 @@
           return;
         }
       }
-      extension[methodName](mode, count, type, start * bytesPerElement, primcount);
+      extension[methodName](mode, count, type, start2 * bytesPerElement, primcount);
       info.update(count, mode, primcount);
     }
     this.setMode = setMode;
@@ -10510,13 +10510,13 @@
   function unrollLoops(string) {
     return string.replace(unrollLoopPattern, loopReplacer).replace(deprecatedUnrollLoopPattern, deprecatedLoopReplacer);
   }
-  function deprecatedLoopReplacer(match, start, end, snippet) {
+  function deprecatedLoopReplacer(match, start2, end, snippet) {
     console.warn("WebGLProgram: #pragma unroll_loop shader syntax is deprecated. Please use #pragma unroll_loop_start syntax instead.");
-    return loopReplacer(match, start, end, snippet);
+    return loopReplacer(match, start2, end, snippet);
   }
-  function loopReplacer(match, start, end, snippet) {
+  function loopReplacer(match, start2, end, snippet) {
     let string = "";
-    for (let i = parseInt(start); i < parseInt(end); i++) {
+    for (let i = parseInt(start2); i < parseInt(end); i++) {
       string += snippet.replace(/\[\s*i\s*\]/g, "[ " + i + " ]").replace(/UNROLLED_LOOP_INDEX/g, i);
     }
     return string;
@@ -16721,9 +16721,9 @@
         const attributes = geometry.attributes;
         const positionAttribute = attributes.position;
         if (index !== null) {
-          const start = Math.max(0, drawRange.start);
+          const start2 = Math.max(0, drawRange.start);
           const end = Math.min(index.count, drawRange.start + drawRange.count);
-          for (let i = start, l = end - 1; i < l; i += step) {
+          for (let i = start2, l = end - 1; i < l; i += step) {
             const a = index.getX(i);
             const b = index.getX(i + 1);
             vStart.fromBufferAttribute(positionAttribute, a);
@@ -16745,9 +16745,9 @@
             });
           }
         } else {
-          const start = Math.max(0, drawRange.start);
+          const start2 = Math.max(0, drawRange.start);
           const end = Math.min(positionAttribute.count, drawRange.start + drawRange.count);
-          for (let i = start, l = end - 1; i < l; i += step) {
+          for (let i = start2, l = end - 1; i < l; i += step) {
             vStart.fromBufferAttribute(positionAttribute, i);
             vEnd.fromBufferAttribute(positionAttribute, i + 1);
             const distSq = _ray$1.distanceSqToSegment(vStart, vEnd, interRay, interSegment);
@@ -16895,17 +16895,17 @@
         const attributes = geometry.attributes;
         const positionAttribute = attributes.position;
         if (index !== null) {
-          const start = Math.max(0, drawRange.start);
+          const start2 = Math.max(0, drawRange.start);
           const end = Math.min(index.count, drawRange.start + drawRange.count);
-          for (let i = start, il = end; i < il; i++) {
+          for (let i = start2, il = end; i < il; i++) {
             const a = index.getX(i);
             _position$2.fromBufferAttribute(positionAttribute, a);
             testPoint(_position$2, a, localThresholdSq, matrixWorld, raycaster, intersects2, this);
           }
         } else {
-          const start = Math.max(0, drawRange.start);
+          const start2 = Math.max(0, drawRange.start);
           const end = Math.min(positionAttribute.count, drawRange.start + drawRange.count);
-          for (let i = start, l = end; i < l; i++) {
+          for (let i = start2, l = end; i < l; i++) {
             _position$2.fromBufferAttribute(positionAttribute, i);
             testPoint(_position$2, i, localThresholdSq, matrixWorld, raycaster, intersects2, this);
           }
@@ -18196,13 +18196,13 @@
       return triangles;
     }
   };
-  function linkedList(data, start, end, dim, clockwise) {
+  function linkedList(data, start2, end, dim, clockwise) {
     let i, last;
-    if (clockwise === signedArea(data, start, end, dim) > 0) {
-      for (i = start; i < end; i += dim)
+    if (clockwise === signedArea(data, start2, end, dim) > 0) {
+      for (i = start2; i < end; i += dim)
         last = insertNode(i, data[i], data[i + 1], last);
     } else {
-      for (i = end - dim; i >= start; i -= dim)
+      for (i = end - dim; i >= start2; i -= dim)
         last = insertNode(i, data[i], data[i + 1], last);
     }
     if (last && equals(last, last.next)) {
@@ -18211,12 +18211,12 @@
     }
     return last;
   }
-  function filterPoints(start, end) {
-    if (!start)
-      return start;
+  function filterPoints(start2, end) {
+    if (!start2)
+      return start2;
     if (!end)
-      end = start;
-    let p = start, again;
+      end = start2;
+    let p = start2, again;
     do {
       again = false;
       if (!p.steiner && (equals(p, p.next) || area(p.prev, p, p.next) === 0)) {
@@ -18302,8 +18302,8 @@
     }
     return true;
   }
-  function cureLocalIntersections(start, triangles, dim) {
-    let p = start;
+  function cureLocalIntersections(start2, triangles, dim) {
+    let p = start2;
     do {
       const a = p.prev, b = p.next.next;
       if (!equals(a, b) && intersects(a, p, p.next, b) && locallyInside(a, b) && locallyInside(b, a)) {
@@ -18312,14 +18312,14 @@
         triangles.push(b.i / dim);
         removeNode(p);
         removeNode(p.next);
-        p = start = b;
+        p = start2 = b;
       }
       p = p.next;
-    } while (p !== start);
+    } while (p !== start2);
     return filterPoints(p);
   }
-  function splitEarcut(start, triangles, dim, minX, minY, invSize) {
-    let a = start;
+  function splitEarcut(start2, triangles, dim, minX, minY, invSize) {
+    let a = start2;
     do {
       let b = a.next.next;
       while (b !== a.prev) {
@@ -18334,15 +18334,15 @@
         b = b.next;
       }
       a = a.next;
-    } while (a !== start);
+    } while (a !== start2);
   }
   function eliminateHoles(data, holeIndices, outerNode, dim) {
     const queue = [];
-    let i, len, start, end, list;
+    let i, len, start2, end, list;
     for (i = 0, len = holeIndices.length; i < len; i++) {
-      start = holeIndices[i] * dim;
+      start2 = holeIndices[i] * dim;
       end = i < len - 1 ? holeIndices[i + 1] * dim : data.length;
-      list = linkedList(data, start, end, dim, false);
+      list = linkedList(data, start2, end, dim, false);
       if (list === list.next)
         list.steiner = true;
       queue.push(getLeftmost(list));
@@ -18408,15 +18408,15 @@
   function sectorContainsSector(m, p) {
     return area(m.prev, m, p.prev) < 0 && area(p.next, m, m.next) < 0;
   }
-  function indexCurve(start, minX, minY, invSize) {
-    let p = start;
+  function indexCurve(start2, minX, minY, invSize) {
+    let p = start2;
     do {
       if (p.z === null)
         p.z = zOrder(p.x, p.y, minX, minY, invSize);
       p.prevZ = p.prev;
       p.nextZ = p.next;
       p = p.next;
-    } while (p !== start);
+    } while (p !== start2);
     p.prevZ.nextZ = null;
     p.prevZ = null;
     sortLinked(p);
@@ -18476,13 +18476,13 @@
     y = (y | y << 1) & 1431655765;
     return x | y << 1;
   }
-  function getLeftmost(start) {
-    let p = start, leftmost = start;
+  function getLeftmost(start2) {
+    let p = start2, leftmost = start2;
     do {
       if (p.x < leftmost.x || p.x === leftmost.x && p.y < leftmost.y)
         leftmost = p;
       p = p.next;
-    } while (p !== start);
+    } while (p !== start2);
     return leftmost;
   }
   function pointInTriangle(ax, ay, bx, by, cx, cy, px2, py2) {
@@ -18586,9 +18586,9 @@
     this.nextZ = null;
     this.steiner = false;
   }
-  function signedArea(data, start, end, dim) {
+  function signedArea(data, start2, end, dim) {
     let sum = 0;
-    for (let i = start, j = end - dim; i < end; i += dim) {
+    for (let i = start2, j = end - dim; i < end; i += dim) {
       sum += (data[j] - data[i]) * (data[i + 1] + data[j + 1]);
       j = i;
     }
@@ -18855,7 +18855,7 @@
         buildLidFaces();
         buildSideFaces();
         function buildLidFaces() {
-          const start = verticesArray.length / 3;
+          const start2 = verticesArray.length / 3;
           if (bevelEnabled) {
             let layer = 0;
             let offset = vlen * layer;
@@ -18879,10 +18879,10 @@
               f3(face[0] + vlen * steps, face[1] + vlen * steps, face[2] + vlen * steps);
             }
           }
-          scope.addGroup(start, verticesArray.length / 3 - start, 0);
+          scope.addGroup(start2, verticesArray.length / 3 - start2, 0);
         }
         function buildSideFaces() {
-          const start = verticesArray.length / 3;
+          const start2 = verticesArray.length / 3;
           let layeroffset = 0;
           sidewalls(contour, layeroffset);
           layeroffset += contour.length;
@@ -18891,7 +18891,7 @@
             sidewalls(ahole, layeroffset);
             layeroffset += ahole.length;
           }
-          scope.addGroup(start, verticesArray.length / 3 - start, 1);
+          scope.addGroup(start2, verticesArray.length / 3 - start2, 1);
         }
         function sidewalls(contour2, layeroffset) {
           let i = contour2.length;
@@ -20692,7 +20692,7 @@
           const total = contentLength ? parseInt(contentLength) : 0;
           const lengthComputable = total !== 0;
           let loaded = 0;
-          const stream = new ReadableStream({
+          const stream2 = new ReadableStream({
             start(controller) {
               readData();
               function readData() {
@@ -20714,7 +20714,7 @@
               }
             }
           });
-          return new Response(stream);
+          return new Response(stream2);
         } else {
           throw Error(`fetch for "${response.url}" responded with ${response.status}: ${response.statusText}`);
         }
@@ -23337,12 +23337,12 @@
   var _startP = /* @__PURE__ */ new Vector3();
   var _startEnd = /* @__PURE__ */ new Vector3();
   var Line3 = class {
-    constructor(start = new Vector3(), end = new Vector3()) {
-      this.start = start;
+    constructor(start2 = new Vector3(), end = new Vector3()) {
+      this.start = start2;
       this.end = end;
     }
-    set(start, end) {
-      this.start.copy(start);
+    set(start2, end) {
+      this.start.copy(start2);
       this.end.copy(end);
       return this;
     }
@@ -24063,12 +24063,12 @@
     }
     return this.setAttribute(name, attribute);
   };
-  BufferGeometry.prototype.addDrawCall = function(start, count, indexOffset) {
+  BufferGeometry.prototype.addDrawCall = function(start2, count, indexOffset) {
     if (indexOffset !== void 0) {
       console.warn("THREE.BufferGeometry: .addDrawCall() no longer supports indexOffset.");
     }
     console.warn("THREE.BufferGeometry: .addDrawCall() is now .addGroup().");
-    this.addGroup(start, count);
+    this.addGroup(start2, count);
   };
   BufferGeometry.prototype.clearDrawCalls = function() {
     console.warn("THREE.BufferGeometry: .clearDrawCalls() is now .clearGroups().");
@@ -25346,10 +25346,7 @@
   var Player = class extends Mesh {
     constructor(ctx2, options) {
       super(new SphereGeometry(0.5), new MeshStandardMaterial({ color: "#88ff88" }));
-      this.audioSource = new AudioBufferSourceNode(ctx2, {
-        buffer: options.buffer,
-        loop: options.loop
-      });
+      this.buffer = options.buffer;
       this.splitter = new ChannelSplitterNode(ctx2, {
         numberOfOutputs: 2
       });
@@ -25362,7 +25359,6 @@
       this.panner = new PannerNode(ctx2, {
         panningModel: "HRTF"
       });
-      this.audioSource.connect(this.splitter);
       this.splitter.connect(this.gainL, 0).connect(this.panner);
       this.splitter.connect(this.gainR, 1).connect(this.panner);
     }
@@ -25370,11 +25366,10 @@
       this.gainL.gain.value = 1 - value;
       this.gainR.gain.value = value;
     }
-    stop() {
-      this.audioSource.stop();
-    }
     start() {
-      this.audioSource.start();
+      const audioSource = new AudioBufferSourceNode(ctx, { buffer: this.buffer });
+      audioSource.connect(this.splitter);
+      audioSource.start();
     }
     connect(node) {
       this.panner.connect(node);
@@ -25414,26 +25409,63 @@
   });
   var ctx;
   var destination;
+  var stream;
+  var players = [];
+  var recorder;
   function initialize() {
     ctx = new AudioContext();
     destination = new MediaStreamAudioDestinationNode(ctx);
     const audio = document.createElement("audio");
     document.body.appendChild(audio);
-    audio.srcObject = destination.stream;
+    stream = destination.stream;
+    audio.srcObject = stream;
     audio.play();
   }
   async function addAudio(file) {
     if (!ctx)
       initialize();
-    const player = new Player(ctx, { buffer: await loadFile(ctx, file), loop: true });
+    const player = new Player(ctx, { buffer: await loadFile(ctx, file), loop: false });
     scene.add(player);
     draggableObjects.push(player);
     player.connect(destination);
-    player.start();
+    players.push(player);
+  }
+  function start() {
+    players.forEach((p) => p.start());
+  }
+  async function download(blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+    a.href = url;
+    a.download = "download.webm";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+  async function record() {
+    recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+    const chunks = [];
+    recorder.ondataavailable = (e) => {
+      if (e.data.size) {
+        chunks.push(e.data);
+        download(new Blob(chunks, { type: "audio/webm" }));
+      }
+    };
+    recorder.start();
   }
   document.getElementById("file").addEventListener("change", (e) => {
     addAudio(e.target.files[0]);
     e.target.value = null;
+  });
+  document.getElementById("play").addEventListener("click", (e) => {
+    start();
+  });
+  document.getElementById("record").addEventListener("click", (e) => {
+    record();
+  });
+  document.getElementById("stop").addEventListener("click", (e) => {
+    recorder.stop();
   });
 })();
 /**
