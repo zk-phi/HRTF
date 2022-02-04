@@ -112,14 +112,17 @@ const loadFile = (ctx, file) => new Promise((resolve) => {
 
 let ctx;
 let destination;
+let stream;
 let players = [];
+let recorder;
 
 function initialize () {
   ctx = new AudioContext();
   destination = new MediaStreamAudioDestinationNode(ctx);
   const audio = document.createElement("audio");
   document.body.appendChild(audio);
-  audio.srcObject = destination.stream;
+  stream = destination.stream;
+  audio.srcObject = stream;
   audio.play();
 }
 
@@ -136,6 +139,29 @@ function start () {
   players.forEach((p) => p.start());
 }
 
+async function download (blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  document.body.appendChild(a);
+  a.style = "display: none";
+  a.href = url;
+  a.download = "download.webm";
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
+async function record () {
+  recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+  const chunks = [];
+  recorder.ondataavailable = (e) => {
+    if (e.data.size) {
+      chunks.push(e.data);
+      download(new Blob(chunks, { type: "audio/webm" }));
+    }
+  };
+  recorder.start();
+}
+
 document.getElementById("file").addEventListener("change", (e) => {
   addAudio(e.target.files[0]);
   e.target.value = null;
@@ -143,4 +169,12 @@ document.getElementById("file").addEventListener("change", (e) => {
 
 document.getElementById("play").addEventListener("click", (e) => {
   start();
+});
+
+document.getElementById("record").addEventListener("click", (e) => {
+  record();
+});
+
+document.getElementById("stop").addEventListener("click", (e) => {
+  recorder.stop();
 });
