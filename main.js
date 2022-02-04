@@ -35135,9 +35135,12 @@
       this.gainR.gain.value = value;
     }
     start() {
-      const audioSource = new AudioBufferSourceNode(ctx, { buffer: this.buffer });
-      audioSource.connect(this.splitter);
-      audioSource.start();
+      return new Promise((resolve) => {
+        const audioSource = new AudioBufferSourceNode(ctx, { buffer: this.buffer });
+        audioSource.connect(this.splitter);
+        audioSource.onended = resolve;
+        audioSource.start();
+      });
     }
     connect(node) {
       this.panner.connect(node);
@@ -35200,7 +35203,7 @@
     players.push(player);
   }
   function start() {
-    players.forEach((p) => p.start());
+    return Promise.all(players.map((p) => p.start()));
   }
   async function download(blob3) {
     const url3 = URL.createObjectURL(blob3);
@@ -35227,14 +35230,23 @@
     addAudio(e.target.files[0]);
     e.target.value = null;
   });
-  document.getElementById("play").addEventListener("click", (e) => {
-    start();
+  var playButton = document.getElementById("play");
+  playButton.addEventListener("click", async (e) => {
+    playButton.disabled = true;
+    recordButton.disabled = true;
+    await start();
+    playButton.disabled = false;
+    recordButton.disabled = false;
   });
-  document.getElementById("record").addEventListener("click", (e) => {
+  var recordButton = document.getElementById("record");
+  recordButton.addEventListener("click", async (e) => {
+    playButton.disabled = true;
+    recordButton.disabled = true;
     record2();
-  });
-  document.getElementById("stop").addEventListener("click", (e) => {
+    await start();
     recorder.stop();
+    playButton.disabled = false;
+    recordButton.disabled = false;
   });
 })();
 /*!
