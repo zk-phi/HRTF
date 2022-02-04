@@ -1,4 +1,6 @@
 import * as THREE from "three";
+import * as Recorder from "extendable-media-recorder";
+import * as WavEncoder from "extendable-media-recorder-wav-encoder";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { DragControls } from "three/examples/jsm/controls/DragControls.js";
 
@@ -116,7 +118,8 @@ let stream;
 let players = [];
 let recorder;
 
-function initialize () {
+async function initialize () {
+  await Recorder.register(await WavEncoder.connect());
   ctx = new AudioContext();
   destination = new MediaStreamAudioDestinationNode(ctx);
   const audio = document.createElement("audio");
@@ -127,7 +130,7 @@ function initialize () {
 }
 
 async function addAudio (file) {
-  if (!ctx) initialize();
+  if (!ctx) await initialize();
   const player = new Player(ctx, { buffer: await loadFile(ctx, file), loop: false });
   scene.add(player);
   draggableObjects.push(player);
@@ -145,18 +148,18 @@ async function download (blob) {
   document.body.appendChild(a);
   a.style = "display: none";
   a.href = url;
-  a.download = "download.webm";
+  a.download = "download.wav";
   a.click();
   window.URL.revokeObjectURL(url);
 }
 
 async function record () {
-  recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+  recorder = new Recorder.MediaRecorder(stream, { mimeType: "audio/wav" });
   const chunks = [];
   recorder.ondataavailable = (e) => {
     if (e.data.size) {
       chunks.push(e.data);
-      download(new Blob(chunks, { type: "audio/webm" }));
+      download(new Blob(chunks, { type: "audio/wav" }));
     }
   };
   recorder.start();
