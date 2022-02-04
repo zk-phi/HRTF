@@ -66,9 +66,12 @@ class Player extends THREE.Mesh {
     this.gainR.gain.value = value;
   }
   start () {
-    const audioSource = new AudioBufferSourceNode(ctx, { buffer: this.buffer });
-    audioSource.connect(this.splitter);
-    audioSource.start();
+    return new Promise((resolve) => {
+      const audioSource = new AudioBufferSourceNode(ctx, { buffer: this.buffer });
+      audioSource.connect(this.splitter);
+      audioSource.onended = resolve;
+      audioSource.start();
+    });
   }
   connect (node) {
     this.panner.connect(node);
@@ -139,7 +142,7 @@ async function addAudio (file) {
 }
 
 function start () {
-  players.forEach((p) => p.start());
+  return Promise.all(players.map((p) => p.start()));
 }
 
 async function download (blob) {
@@ -170,14 +173,22 @@ document.getElementById("file").addEventListener("change", (e) => {
   e.target.value = null;
 });
 
-document.getElementById("play").addEventListener("click", (e) => {
-  start();
+const playButton = document.getElementById("play");
+playButton.addEventListener("click", async (e) => {
+  playButton.disabled = true;
+  recordButton.disabled = true;
+  await start();
+  playButton.disabled = false;
+  recordButton.disabled = false;
 });
 
-document.getElementById("record").addEventListener("click", (e) => {
+const recordButton = document.getElementById("record");
+recordButton.addEventListener("click", async (e) => {
+  playButton.disabled = true;
+  recordButton.disabled = true;
   record();
-});
-
-document.getElementById("stop").addEventListener("click", (e) => {
+  await start();
   recorder.stop();
+  playButton.disabled = false;
+  recordButton.disabled = false;
 });
