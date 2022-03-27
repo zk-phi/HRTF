@@ -76,6 +76,7 @@ class Player extends DraggableMesh {
       new THREE.SphereGeometry(0.5),
       new THREE.MeshStandardMaterial({ color: "#88ff88" }),
     );
+    this.delay = options.delay || 0;
     this.buffer = options.buffer;
     this.splitter = new ChannelSplitterNode(ctx, {
       numberOfOutputs: 2,
@@ -122,8 +123,10 @@ class Player extends DraggableMesh {
         this.material.color.set("#88ff88");
         resolve();
       };
-      audioSource.start();
-      this.material.color.set("#ffff44");
+      setTimeout(() => {
+        audioSource.start();
+        this.material.color.set("#ffff44");
+      }, this.delay);
     });
   }
   connect (node) {
