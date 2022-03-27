@@ -5,6 +5,8 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { DragControls } from "three/examples/jsm/controls/DragControls.js";
 import { initDraggable } from "./DraggableMesh.js";
 import { loadAudioFile, downloadBlob } from "./utils.js";
+import * as Preact from "preact";
+import { useState } from "preact/hooks";
 
 const renderer = new THREE.WebGLRenderer({
   canvas: document.getElementById("render"),
@@ -172,7 +174,7 @@ function start () {
   return Promise.all(players.map((p) => p.start()));
 }
 
-async function record () {
+async function startRecording () {
   recorder = new Recorder.MediaRecorder(stream, { mimeType: "audio/wav" });
   const chunks = [];
   recorder.ondataavailable = (e) => {
@@ -184,27 +186,40 @@ async function record () {
   recorder.start();
 }
 
-document.getElementById("file").addEventListener("change", (e) => {
-  addAudio(e.target.files[0]);
-  e.target.value = null;
-});
+const App = () => {
+  const [playing, setPlaying] = useState(false);
+  const [recording, setRecording] = useState(false);
 
-const playButton = document.getElementById("play");
-playButton.addEventListener("click", async (e) => {
-  playButton.disabled = true;
-  recordButton.disabled = true;
-  await start();
-  playButton.disabled = false;
-  recordButton.disabled = false;
-});
+  const play = async () => {
+    setPlaying(true);
+    await start();
+    setPlaying(false);
+  };
 
-const recordButton = document.getElementById("record");
-recordButton.addEventListener("click", async (e) => {
-  playButton.disabled = true;
-  recordButton.disabled = true;
-  record();
-  await start();
-  recorder.stop();
-  playButton.disabled = false;
-  recordButton.disabled = false;
-});
+  const record = async () => {
+    setRecording(true);
+    startRecording();
+    await start();
+    recorder.stop();
+    setRecording(false);
+  };
+
+  const add = (e) => {
+    addAudio(e.target.files[0]);
+    e.target.value = null;
+  };
+
+  return (
+    <>
+      <div>
+        音を追加: <input type="file" disabled={ playing || recording } onChange={ add } />
+      </div>
+      <div>
+        <button disabled={ playing || recording } onClick={ play }>再生</button>
+        <button disabled={ playing || recording } onClick={ record }>録音</button>
+      </div>
+    </>
+  );
+};
+
+Preact.render(<App />, document.getElementById("preact-container"));
