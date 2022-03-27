@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "build": "esbuild --bundle src/index.js --sourcemap --outfile=dist/main.js",
-    "start": "esbuild --bundle src/index.js --sourcemap --outfile=dist/main.js --servedir=dist"
+    "build": "esbuild --bundle src/index.jsx --jsx-factory=Preact.h --jsx-fragment=Preact.Fragment --sourcemap --outfile=dist/main.js",
+    "start": "esbuild --bundle src/index.jsx --jsx-factory=Preact.h --jsx-fragment=Preact.Fragment --sourcemap --outfile=dist/main.js --servedir=dist"
   },
   "devDependencies": {
     "esbuild": "^0.14.11"
@@ -9,6 +9,7 @@
   "dependencies": {
     "extendable-media-recorder": "^6.5.16",
     "extendable-media-recorder-wav-encoder": "^7.0.65",
+    "preact": "^10.6.6",
     "three": "^0.136.0"
   }
 }
