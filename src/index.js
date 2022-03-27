@@ -4,6 +4,7 @@ import * as WavEncoder from "extendable-media-recorder-wav-encoder";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { DragControls } from "three/examples/jsm/controls/DragControls.js";
 import { initDraggable } from "./DraggableMesh.js";
+import { loadAudioFile, downloadBlob } from "./utils.js";
 
 const width = 960;
 const height = 640;
@@ -111,12 +112,6 @@ update();
 
 /* ----------------------------------------- */
 
-const loadFile = (ctx, file) => new Promise((resolve) => {
-  const reader = new FileReader();
-  reader.onload = (e) => ctx.decodeAudioData(e.target.result, resolve);
-  reader.readAsArrayBuffer(file);
-});
-
 let ctx;
 let destination;
 let stream;
@@ -136,7 +131,7 @@ async function initialize () {
 
 async function addAudio (file) {
   if (!ctx) await initialize();
-  const player = new Player(ctx, { buffer: await loadFile(ctx, file), loop: false });
+  const player = new Player(ctx, { buffer: await loadAudioFile(ctx, file), loop: false });
   scene.add(player);
   player.connect(destination);
   players.push(player);
@@ -146,24 +141,13 @@ function start () {
   return Promise.all(players.map((p) => p.start()));
 }
 
-async function download (blob) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  document.body.appendChild(a);
-  a.style = "display: none";
-  a.href = url;
-  a.download = "download.wav";
-  a.click();
-  window.URL.revokeObjectURL(url);
-}
-
 async function record () {
   recorder = new Recorder.MediaRecorder(stream, { mimeType: "audio/wav" });
   const chunks = [];
   recorder.ondataavailable = (e) => {
     if (e.data.size) {
       chunks.push(e.data);
-      download(new Blob(chunks, { type: "audio/wav" }));
+      downloadBlob(new Blob(chunks, { type: "audio/wav" }));
     }
   };
   recorder.start();
