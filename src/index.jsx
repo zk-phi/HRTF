@@ -145,9 +145,7 @@ update();
 
 let ctx;
 let destination;
-let stream;
 let players = [];
-let recorder;
 
 async function initialize () {
   await Recorder.register(await WavEncoder.connect());
@@ -155,8 +153,7 @@ async function initialize () {
   destination = new MediaStreamAudioDestinationNode(ctx);
   const audio = document.createElement("audio");
   document.body.appendChild(audio);
-  stream = destination.stream;
-  audio.srcObject = stream;
+  audio.srcObject = destination.stream;
   audio.play();
 }
 
@@ -174,8 +171,8 @@ function start () {
   return Promise.all(players.map((p) => p.start()));
 }
 
-async function startRecording () {
-  recorder = new Recorder.MediaRecorder(stream, { mimeType: "audio/wav" });
+function startRecording () {
+  const recorder = new Recorder.MediaRecorder(destination.stream, { mimeType: "audio/wav" });
   const chunks = [];
   recorder.ondataavailable = (e) => {
     if (e.data.size) {
@@ -184,6 +181,7 @@ async function startRecording () {
     }
   };
   recorder.start();
+  return recorder;
 }
 
 const App = () => {
@@ -198,7 +196,7 @@ const App = () => {
 
   const record = async () => {
     setRecording(true);
-    startRecording();
+    const recorder = startRecording();
     await start();
     recorder.stop();
     setRecording(false);
