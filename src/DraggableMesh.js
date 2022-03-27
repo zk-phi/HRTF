@@ -36,6 +36,7 @@ export const initDraggable = (renderer, camera, controls) => {
       draggedObject = intersects[0].object;
       draggedObject.onDragStart();
       camera.getWorldDirection(plane.normal);
+      plane.constant -= plane.distanceToPoint(draggedObject.position);
     }
   }, false);
 
