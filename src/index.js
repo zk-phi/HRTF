@@ -6,19 +6,16 @@ import { DragControls } from "three/examples/jsm/controls/DragControls.js";
 import { initDraggable } from "./DraggableMesh.js";
 import { loadAudioFile, downloadBlob } from "./utils.js";
 
-const width = 960;
-const height = 640;
-
 const renderer = new THREE.WebGLRenderer({
+  canvas: document.getElementById("render"),
   antialias: true,
   alpha: true,
 });
-renderer.setSize(width, height);
+renderer.setSize(640, 640);
 renderer.setPixelRatio(devicePixelRatio);
 renderer.setClearColor(0x000000, 0);
-document.body.appendChild(renderer.domElement);
 
-const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(45, 640 / 640);
 camera.position.set(0, 30, 0);
 camera.lookAt(0, 0, 0);
 
