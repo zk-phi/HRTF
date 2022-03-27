@@ -91,8 +91,12 @@ class Player extends DraggableMesh {
     return new Promise((resolve) => {
       const audioSource = new AudioBufferSourceNode(ctx, { buffer: this.buffer });
       audioSource.connect(this.splitter);
-      audioSource.onended = resolve;
+      audioSource.onended = () => {
+        this.material.color.set("#88ff88");
+        resolve();
+      };
       audioSource.start();
+      this.material.color.set("#ffff44");
     });
   }
   connect (node) {
