@@ -14,9 +14,11 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(640, 640);
 renderer.setPixelRatio(devicePixelRatio);
 renderer.setClearColor(0x000000, 0);
+renderer.shadowMap.enabled = true;
+renderer.physicallyCorrectLights = true;
 
 const camera = new THREE.PerspectiveCamera(45, 640 / 640);
-camera.position.set(0, 30, 0);
+camera.position.set(0, 15, 0);
 camera.lookAt(0, 0, 0);
 
 const orbitControls = new OrbitControls(camera, renderer.domElement);
@@ -26,11 +28,35 @@ const scene = new THREE.Scene();
 scene.add(new THREE.PolarGridHelper(50, 32, 25));
 scene.add(new THREE.AxesHelper(100));
 
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(0, 30, 0);
+const ambLight = new THREE.AmbientLight(0xFFFFFF, 1.0);
+scene.add(ambLight);
+
+const light = new THREE.DirectionalLight(0xFFFFFF, 2.0);
+light.position.set(0, 5, 0);
+light.castShadow = true;
+light.shadow.mapSize.set(4096, 4096);
+light.shadow.camera.left = -10;
+light.shadow.camera.right = 10;
+light.shadow.camera.bottom = -10;
+light.shadow.camera.top = 10;
 scene.add(light);
 
 const { DraggableMesh } = initDraggable(renderer, camera, [orbitControls]);
+
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(20, 20),
+  new THREE.MeshLambertMaterial({
+    color: "#ffffff",
+    transparent: true,
+    opacity: 0.9,
+    side: THREE.DoubleSide,
+    emissive: "#333333",
+  }),
+);
+floor.position.set(0, -5, 0);
+floor.rotation.set(- Math.PI / 2, 0, 0);
+floor.receiveShadow = true;
+scene.add(floor);
 
 const listener = new THREE.Mesh(
   new THREE.ConeGeometry(0.5, 1, 32),
@@ -38,6 +64,8 @@ const listener = new THREE.Mesh(
 );
 listener.position.set(0, 0, 0);
 listener.rotation.set(- Math.PI / 2, 0, 0);
+listener.castShadow = true;
+listener.receiveShadow = true;
 scene.add(listener);
 
 class Player extends DraggableMesh {
@@ -133,6 +161,8 @@ async function initialize () {
 async function addAudio (file) {
   if (!ctx) await initialize();
   const player = new Player(ctx, { buffer: await loadAudioFile(ctx, file), loop: false });
+  player.castShadow = true;
+  player.receiveShadow = true;
   scene.add(player);
   player.connect(destination);
   players.push(player);
