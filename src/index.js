@@ -24,7 +24,7 @@ const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.target.set(0, 0, 0);
 
 const scene = new THREE.Scene();
-scene.add(new THREE.PolarGridHelper(50, 32, 50));
+scene.add(new THREE.PolarGridHelper(50, 32, 25));
 scene.add(new THREE.AxesHelper(100));
 
 const light = new THREE.DirectionalLight(0xffffff, 1);
