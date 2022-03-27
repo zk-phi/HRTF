@@ -159,7 +159,7 @@ async function initialize () {
 
 async function addAudio (file) {
   if (!ctx) await initialize();
-  const player = new Player(ctx, { buffer: await loadAudioFile(ctx, file), loop: false });
+  const player = new Player(ctx, { buffer: await loadAudioFile(ctx, file) });
   player.castShadow = true;
   player.receiveShadow = true;
   scene.add(player);
