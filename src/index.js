@@ -86,19 +86,56 @@ class Player extends THREE.Mesh {
   }
 }
 
+/**
+ * Drag & Drop Mesh
+ * - https://irukanobox.blogspot.com/2016/11/threejs3d.html
+ * - https://threejs.org/docs/#api/en/core/Raycaster
+ */
+
 let draggableObjects = [];
-const dragControls = new DragControls(draggableObjects, camera, renderer.domElement);
-dragControls.addEventListener("dragstart", (e) => {
-  orbitControls.enabled = false;
-  e.object.material.emissive.set(0x333333);
-});
-dragControls.addEventListener("dragend", (e) => {
+const plane = new THREE.Plane();
+const raycaster = new THREE.Raycaster();
+let draggedObject = null;
+
+const mouse = new THREE.Vector2();
+const updateRaycaster = (e) => {
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = - ((e.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+};
+
+const intersection = new THREE.Vector3();
+renderer.domElement.addEventListener('mousemove', (e) => {
+  e.preventDefault();
+  if (draggedObject) {
+    updateRaycaster(e);
+    raycaster.ray.intersectPlane(plane, intersection);
+    draggedObject.position.copy(intersection);
+    draggedObject.updateAudio && draggedObject.updateAudio();
+  }
+}, false);
+
+renderer.domElement.addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  updateRaycaster(e);
+  const intersects = raycaster.intersectObjects(draggableObjects);
+  if (intersects.length > 0) {
+    orbitControls.enabled = false;
+    draggedObject = intersects[0].object;
+    draggedObject.material.emissive.set(0x333333);
+    camera.getWorldDirection(plane.normal);
+  }
+}, false);
+
+renderer.domElement.addEventListener('mouseup', (e) => {
+  e.preventDefault();
   orbitControls.enabled = true;
-  e.object.material.emissive.set(0x000000);
-});
-dragControls.addEventListener("drag", (e) => {
-  e.object.updateAudio && e.object.updateAudio();
-});
+  if (draggedObject) {
+    draggedObject.material.emissive.set(0x000000);
+    draggedObject = null;
+  }
+}, false);
 
 function update () {
   requestAnimationFrame(update);
