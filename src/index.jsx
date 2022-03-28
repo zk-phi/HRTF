@@ -70,6 +70,10 @@ class Player extends DraggableMesh {
       new THREE.SphereGeometry(0.5),
       new THREE.MeshStandardMaterial({ color: "#88ff88" }),
     );
+    if (options.shadow) {
+      this.receiveShadow = true;
+      this.castShadow = true;
+    }
     this.delay = options.delay || 0;
     this.buffer = options.buffer;
     this.splitter = new ChannelSplitterNode(ctx, {
@@ -156,9 +160,10 @@ async function initialize () {
 
 async function addAudio (file) {
   if (!ctx) await initialize();
-  const player = new Player(ctx, { buffer: await loadAudioFile(ctx, file) });
-  player.castShadow = true;
-  player.receiveShadow = true;
+  const player = new Player(ctx, {
+    buffer: await loadAudioFile(ctx, file),
+    shadow: true,
+  });
   scene.add(player);
   player.connect(destination);
   players.push(player);
