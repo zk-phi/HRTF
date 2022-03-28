@@ -217,7 +217,7 @@ const App = () => {
 
   const updateSelectedPlayer = useCallback((player) => {
     setSelectedPlayer(player);
-    setSelectedPlayerValues({
+    setSelectedPlayerValues(player ? {
       name: player.name,
       delay: player.delay,
       pos: {
@@ -225,7 +225,7 @@ const App = () => {
         y: player.position.y,
         z: player.position.z,
       },
-    });
+    } : null);
   }, [setSelectedPlayer, setSelectedPlayerValues]);
 
   const onChangeDelay = useCallback((e) => {
@@ -244,6 +244,14 @@ const App = () => {
     updateSelectedPlayer(player);
     e.target.value = null;
   };
+
+  const deleteSelectedPlayer = useCallback(() => {
+    if (selectedPlayer) {
+      selectedPlayer.removeFromParent();
+      setPlayers(players.filter((player) => player !== selectedPlayer));
+      setSelectedPlayer(null);
+    }
+  }, [players, selectedPlayer, setPlayers]);
 
   return (
     <>
@@ -272,6 +280,11 @@ const App = () => {
             delay:
             <input type="number" value={ selectedPlayerValues.delay } onInput={ onChangeDelay } />
             ms
+          </li>
+          <li>
+            <button disabled={ playing || recording } onClick={ deleteSelectedPlayer }>
+              削除
+            </button>
           </li>
         </ul>
       ) }
