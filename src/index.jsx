@@ -47,13 +47,7 @@ const { DraggableMesh } = initDraggable(renderer, camera, [orbitControls]);
 
 const floor = new THREE.Mesh(
   new THREE.PlaneGeometry(20, 20),
-  new THREE.MeshLambertMaterial({
-    color: "#ffffff",
-    transparent: true,
-    opacity: 0.9,
-    side: THREE.DoubleSide,
-    emissive: "#333333",
-  }),
+  new THREE.MeshLambertMaterial({ color: "#ffffff", side: THREE.DoubleSide, emissive: "#333333" }),
 );
 floor.position.set(0, -5, 0);
 floor.rotation.set(- Math.PI / 2, 0, 0);
