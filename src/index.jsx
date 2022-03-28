@@ -146,7 +146,6 @@ update();
 
 let ctx;
 let destination;
-let players = [];
 
 async function initialize () {
   await Recorder.register(await WavEncoder.connect());
@@ -158,7 +157,7 @@ async function initialize () {
   audio.play();
 }
 
-async function addAudio (file) {
+async function makePlayer (file) {
   if (!ctx) await initialize();
   const player = new Player(ctx, {
     buffer: await loadAudioFile(ctx, file),
@@ -166,10 +165,10 @@ async function addAudio (file) {
   });
   scene.add(player);
   player.connect(destination);
-  players.push(player);
+  return player;
 }
 
-function start () {
+function playAll (players) {
   return Promise.all(players.map((p) => p.start()));
 }
 
@@ -189,23 +188,25 @@ function startRecording () {
 const App = () => {
   const [playing, setPlaying] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [players, setPlayers] = useState([]);
 
   const play = async () => {
     setPlaying(true);
-    await start();
+    await playAll(players);
     setPlaying(false);
   };
 
   const record = async () => {
     setRecording(true);
     const recorder = startRecording();
-    await start();
+    await playAll(players);
     recorder.stop();
     setRecording(false);
   };
 
-  const add = (e) => {
-    addAudio(e.target.files[0]);
+  const add = async (e) => {
+    const player = await makePlayer(e.target.files[0]);
+    setPlayers([...players, player]);
     e.target.value = null;
   };
 
