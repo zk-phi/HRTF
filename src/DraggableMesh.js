@@ -57,7 +57,7 @@ export const initDraggable = (renderer, camera, controls) => {
       draggableObjects.push(this);
     }
     removeFromParent() {
-      draggableObjects = draggedObject.filter((obj) => obj !== this);
+      draggableObjects = draggableObjects.filter((obj) => obj !== this);
       super.removeFromParent();
     }
     onDragStart() {
