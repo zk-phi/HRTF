@@ -1,5 +1,5 @@
 import * as Preact from "preact";
-import { useState, useCallback } from "preact/hooks";
+import { useState, useCallback, useRef, useMemo } from "preact/hooks";
 import * as THREE from "three";
 import * as Recorder from "extendable-media-recorder";
 import * as WavEncoder from "extendable-media-recorder-wav-encoder";
@@ -8,20 +8,26 @@ import { DragControls } from "three/examples/jsm/controls/DragControls.js";
 import { initDraggable } from "./DraggableMesh.js";
 import { loadAudioFile, downloadBlob } from "./utils.js";
 
-const renderer = new THREE.WebGLRenderer({
-  canvas: document.getElementById("render"),
-  antialias: true,
-  alpha: true,
-});
-renderer.setSize(640, 640);
+const canvas = document.getElementById("render");
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(devicePixelRatio);
 renderer.setClearColor(0x000000, 0);
 renderer.shadowMap.enabled = true;
 renderer.physicallyCorrectLights = true;
 
-const camera = new THREE.PerspectiveCamera(45, 640 / 640);
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight);
 camera.position.set(0, 15, 0);
 camera.lookAt(0, 0, 0);
+
+const updateSize = () => {
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(devicePixelRatio);
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+};
+window.addEventListener("resize", updateSize);
 
 const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.target.set(0, 0, 0);
@@ -194,12 +200,31 @@ function startRecording () {
   return recorder;
 }
 
-const App = () => {
+/* ----------------------------------------- */
+
+const Introduction = ({ onHideIntroduction }) => (
+  <div id="dialog">
+    <h1>HRTFy</h1>
+    <p>効果音やボイスなどの音素材を立体音響化することができます。要イヤホン。</p>
+    <p>拾ってきた効果音素材を使う場合、「改変可」の素材を使用するよう注意してください。</p>
+    <button onClick={ onHideIntroduction }>遊ぶ</button>
+    <p>
+      <small>
+        Built with ♡ by <a href="https://twitter.com/zk_phi" target="_blank">zk-phi</a>
+      </small>
+    </p>
+  </div>
+);
+
+const Controls = () => {
   const [playing, setPlaying] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [players, setPlayers] = useState([]);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [selectedPlayerValues, setSelectedPlayerValues] = useState({});
+
+  const busy = useMemo(() => playing || recording || loading, [playing, recording, loading]);
 
   const play = async () => {
     setPlaying(true);
@@ -236,6 +261,7 @@ const App = () => {
   }, [selectedPlayer, updateSelectedPlayer]);
 
   const add = async (e) => {
+    setLoading(true);
     const player = await makePlayer(e.target.files[0], {
       onDragStart: updateSelectedPlayer,
       onDrag: updateSelectedPlayer,
@@ -243,6 +269,7 @@ const App = () => {
     setPlayers([...players, player]);
     updateSelectedPlayer(player);
     e.target.value = null;
+    setLoading(false);
   };
 
   const deleteSelectedPlayer = useCallback(() => {
@@ -253,47 +280,70 @@ const App = () => {
     }
   }, [players, selectedPlayer, setPlayers]);
 
+  const fileInput = useRef(null);
+  const onClickAdd = useCallback(() => {
+    fileInput.current.click();
+  }, [fileInput]);
+
   return (
-    <>
-      <div>
-        音を追加: <input type="file" disabled={ playing || recording } onChange={ add } />
-      </div>
-      <div>
-        <button disabled={ playing || recording } onClick={ play }>再生</button>
-        <button disabled={ playing || recording } onClick={ record }>録音</button>
+    <div id="controls">
+      <div class="control">
+        <button class="item" disabled={ busy } onClick={ onClickAdd }>
+          <input type="file" ref={ fileInput } style="display: none" onChange={ add } />
+          ＋音を追加
+        </button>
+        { players.length > 0 && (
+          <>
+            <button class="item" disabled={ busy } onClick={ play }>プレビュー</button>
+            <button class="item" disabled={ busy } onClick={ record }>録音</button>
+          </>
+        ) }
       </div>
       { selectedPlayer && (
-        <ul>
-          <li>
-            { selectedPlayerValues.name }
-          </li>
-          <li>
-            x: { selectedPlayerValues.pos.x }
-          </li>
-          <li>
-            y: { selectedPlayerValues.pos.y }
-          </li>
-          <li>
-            z: { selectedPlayerValues.pos.z }
-          </li>
-          <li>
-            delay:
-            <input
-                type="number"
-                disabled={ playing || recording }
-                value={ selectedPlayerValues.delay }
-                onInput={ onChangeDelay } />
-            ms
-          </li>
-          <li>
-            <button disabled={ playing || recording } onClick={ deleteSelectedPlayer }>
+        <>
+          <div class="control">
+            <div class="item">
+              { selectedPlayerValues.name }
+            </div>
+            <div class="item">
+              再生タイミング：
+              <input
+                  type="number"
+                  disabled={ busy }
+                  value={ selectedPlayerValues.delay }
+                  onInput={ onChangeDelay } />
+              ミリ秒
+            </div>
+            <button class="item" disabled={ busy } onClick={ deleteSelectedPlayer }>
               削除
             </button>
-          </li>
-        </ul>
+          </div>
+          <div class="control">
+            <div class="item">
+              操作方法：
+            </div>
+            <div class="item">
+              玉をドラッグで音を移動、玉以外をドラッグで視点切り替え
+            </div>
+          </div>
+        </>
       ) }
-    </>
+    </div>
   );
+};
+
+const App = () => {
+  const [showIntroduction, setShowIntroduction] = useState(true);
+
+  const hideIntroduction = useCallback(() => {
+    setShowIntroduction(false)
+  }, [setShowIntroduction]);
+
+  if (showIntroduction) {
+    return <Introduction onHideIntroduction={ hideIntroduction } />
+  } else {
+    return <Controls />
+  }
 };
 
 Preact.render(<App />, document.getElementById("preact-container"));
