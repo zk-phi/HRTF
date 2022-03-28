@@ -278,7 +278,11 @@ const App = () => {
           </li>
           <li>
             delay:
-            <input type="number" value={ selectedPlayerValues.delay } onInput={ onChangeDelay } />
+            <input
+                type="number"
+                disabled={ playing || recording }
+                value={ selectedPlayerValues.delay }
+                onInput={ onChangeDelay } />
             ms
           </li>
           <li>
