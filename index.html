@@ -1,23 +1,90 @@
 <html>
   <head>
-    <title>おためし立体音響</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRTFy</title>
     <style>
+body {
+  background: black;
+  margin: 0;
+}
+
 canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+#preact-container {
+  z-index: 1;
+}
+
+#dialog {
+  position: absolute;
+  right: 64px;
+  top: 64px;
+  bottom: 64px;
+  background: #ea0;
+  padding: 16px;
+  box-shadow: 0 0 16px rgba(128, 128, 128, 0.5);
+}
+
+#dialog button {
+  background: transparent;
   border: 1px solid black;
-  margin: 8px;
+  padding: 8px 12px;
+}
+
+#dialog button:hover {
+  background: black;
+  color: #ea0;
+  cursor: pointer;
+}
+
+#controls {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  color: white;
+  width: 256px;
+}
+
+.control {
+  padding: 8px;
+  background: rgba(96, 96, 96, 0.8);
+  margin-bottom: 8px;
+}
+
+#controls .item {
+  font-size: 14px;
+  padding: 4px;
+}
+
+#controls button {
+  width: 100%;
+  text-align: center;
+  background: transparent;
+  color: white;
+  border: none;
+}
+
+#controls button:disabled {
+  color: #aaa;
+}
+
+#controls button:hover {
+  background: white;
+  color: black;
+  cursor: pointer;
+}
+
+input[type=number] {
+  width: 64px;
 }
     </style>
   </head>
   <body>
-    <h1>おためし立体音響</h1>
-    <p>音声ファイルを読み込んで、空間上の好きな位置から鳴らせます。要イヤホン</p>
-    音を追加：<input type="file" id="file">
-    <p>操作：緑の球をドラッグで音源を移動、球のないところをドラッグでカメラを回転</p>
-    <p>効果音素材を使う場合は、その素材が改変可になっているか確認してください。</p>
-    <p>
-      <button id="play">再生</button>
-      <button id="record">録音</button>
-    </p>
+    <canvas id="render"></canvas>
+    <div id="preact-container"></div>
     <script src="main.js"></script>
   </body>
 </html>
