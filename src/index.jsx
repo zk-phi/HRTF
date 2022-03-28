@@ -1,3 +1,5 @@
+import * as Preact from "preact";
+import { useState, useCallback } from "preact/hooks";
 import * as THREE from "three";
 import * as Recorder from "extendable-media-recorder";
 import * as WavEncoder from "extendable-media-recorder-wav-encoder";
@@ -5,8 +7,6 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { DragControls } from "three/examples/jsm/controls/DragControls.js";
 import { initDraggable } from "./DraggableMesh.js";
 import { loadAudioFile, downloadBlob } from "./utils.js";
-import * as Preact from "preact";
-import { useState } from "preact/hooks";
 
 const renderer = new THREE.WebGLRenderer({
   canvas: document.getElementById("render"),
@@ -76,6 +76,10 @@ class Player extends DraggableMesh {
     }
     this.delay = options.delay || 0;
     this.buffer = options.buffer;
+    this.name = options.name;
+    this.onDragStartUser = options.onDragStart;
+    this.onDragEndUser = options.onDragEnd;
+    this.onDragUser = options.onDrag;
     this.splitter = new ChannelSplitterNode(ctx, {
       numberOfOutputs: 2,
     });
@@ -97,17 +101,20 @@ class Player extends DraggableMesh {
     this.previewSource = new AudioBufferSourceNode(ctx, { buffer: this.buffer, loop: true });
     this.previewSource.connect(this.splitter);
     this.previewSource.start();
+    this.onDragStartUser && this.onDragStartUser(this);
   }
   onDragEnd () {
     this.material.emissive.set(0x000000);
     this.previewSource.stop();
     this.previewSource = null;
+    this.onDragEndUser && this.onDragEndUser(this);
   }
   onDrag (position) {
     this.position.copy(position);
     this.panner.positionX.value = position.x;
     this.panner.positionY.value = position.y;
     this.panner.positionZ.value = position.z;
+    this.onDragUser && this.onDragUser(this);
   }
   setBalance (value /* 0 ~ 1 */) {
     this.gainL.gain.value = (1 - value);
@@ -157,11 +164,13 @@ async function initialize () {
   audio.play();
 }
 
-async function makePlayer (file) {
+async function makePlayer (file, options) {
   if (!ctx) await initialize();
   const player = new Player(ctx, {
     buffer: await loadAudioFile(ctx, file),
     shadow: true,
+    name: file.name,
+    ...options,
   });
   scene.add(player);
   player.connect(destination);
@@ -189,6 +198,8 @@ const App = () => {
   const [playing, setPlaying] = useState(false);
   const [recording, setRecording] = useState(false);
   const [players, setPlayers] = useState([]);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [selectedPlayerValues, setSelectedPlayerValues] = useState({});
 
   const play = async () => {
     setPlaying(true);
@@ -204,9 +215,33 @@ const App = () => {
     setRecording(false);
   };
 
+  const updateSelectedPlayer = useCallback((player) => {
+    setSelectedPlayer(player);
+    setSelectedPlayerValues({
+      name: player.name,
+      delay: player.delay,
+      pos: {
+        x: player.position.x,
+        y: player.position.y,
+        z: player.position.z,
+      },
+    });
+  }, [setSelectedPlayer, setSelectedPlayerValues]);
+
+  const onChangeDelay = useCallback((e) => {
+    if (selectedPlayer) {
+      selectedPlayer.delay = e.target.value;
+      updateSelectedPlayer(selectedPlayer);
+    }
+  }, [selectedPlayer, updateSelectedPlayer]);
+
   const add = async (e) => {
-    const player = await makePlayer(e.target.files[0]);
+    const player = await makePlayer(e.target.files[0], {
+      onDragStart: updateSelectedPlayer,
+      onDrag: updateSelectedPlayer,
+    });
     setPlayers([...players, player]);
+    updateSelectedPlayer(player);
     e.target.value = null;
   };
 
@@ -219,6 +254,27 @@ const App = () => {
         <button disabled={ playing || recording } onClick={ play }>再生</button>
         <button disabled={ playing || recording } onClick={ record }>録音</button>
       </div>
+      { selectedPlayer && (
+        <ul>
+          <li>
+            { selectedPlayerValues.name }
+          </li>
+          <li>
+            x: { selectedPlayerValues.pos.x }
+          </li>
+          <li>
+            y: { selectedPlayerValues.pos.y }
+          </li>
+          <li>
+            z: { selectedPlayerValues.pos.z }
+          </li>
+          <li>
+            delay:
+            <input type="number" value={ selectedPlayerValues.delay } onInput={ onChangeDelay } />
+            ms
+          </li>
+        </ul>
+      ) }
     </>
   );
 };
