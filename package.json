@@ -4,7 +4,7 @@
     "start": "esbuild --bundle src/index.jsx --jsx-factory=Preact.h --jsx-fragment=Preact.Fragment --sourcemap --outfile=dist/main.js --servedir=dist"
   },
   "devDependencies": {
-    "esbuild": "^0.14.11"
+    "esbuild": "^0.14.32"
   },
   "dependencies": {
     "extendable-media-recorder": "^6.5.16",
