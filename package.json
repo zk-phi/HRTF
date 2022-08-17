@@ -9,7 +9,7 @@
   "dependencies": {
     "extendable-media-recorder": "^6.5.16",
     "extendable-media-recorder-wav-encoder": "^7.0.65",
-    "preact": "^10.6.6",
+    "preact": "^10.10.3",
     "three": "^0.136.0"
   }
 }
