@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "extendable-media-recorder": "^6.5.16",
-    "extendable-media-recorder-wav-encoder": "^7.0.65",
+    "extendable-media-recorder-wav-encoder": "^7.0.77",
     "preact": "^10.6.6",
     "three": "^0.136.0"
   }
